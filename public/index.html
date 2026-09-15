@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pitch Script Generator — Fierce Foundry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#1B4D4A;
+    --teal-dark:#123634;
+    --magenta:#9B2D8E;
+    --gold:#EDD286;
+    --cream:#FFFBF0;
+    --ink:#20302F;
+    --muted:#6E7A79;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cream);
+    font-family:'Inter',sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  .shell{
+    max-width:720px;
+    margin:0 auto;
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+  }
+  header{
+    padding:28px 24px 20px;
+    border-bottom:3px solid var(--gold);
+    background:var(--teal);
+    color:var(--cream);
+  }
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:0.06em;
+    color:var(--gold);
+    font-weight:600;
+    margin:0 0 6px;
+  }
+  h1{
+    font-family:'Bricolage Grotesque',sans-serif;
+    font-weight:800;
+    font-size:26px;
+    line-height:1.15;
+    margin:0 0 8px;
+    color:var(--cream);
+  }
+  header p.sub{
+    margin:0;
+    font-size:14px;
+    color:#CFE3E0;
+    line-height:1.5;
+    max-width:52ch;
+  }
+  #chat{
+    flex:1;
+    overflow-y:auto;
+    padding:24px 20px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .bubble{
+    max-width:82%;
+    padding:13px 16px;
+    border-radius:14px;
+    font-size:15px;
+    line-height:1.55;
+    white-space:pre-wrap;
+  }
+  .bubble.assistant{
+    align-self:flex-start;
+    background:#ffffff;
+    border:1px solid #E4DFD2;
+    border-bottom-left-radius:4px;
+    color:var(--ink);
+  }
+  .bubble.user{
+    align-self:flex-end;
+    background:var(--teal);
+    color:var(--cream);
+    border-bottom-right-radius:4px;
+  }
+  .bubble.assistant .role-tag{
+    display:block;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.04em;
+    color:var(--magenta);
+    margin-bottom:5px;
+  }
+  #typing{
+    align-self:flex-start;
+    display:none;
+    align-items:center;
+    gap:5px;
+    padding:13px 16px;
+  }
+  #typing span{
+    width:6px;height:6px;border-radius:50%;
+    background:var(--muted);
+    animation:bounce 1.2s infinite ease-in-out;
+  }
+  #typing span:nth-child(2){animation-delay:0.15s;}
+  #typing span:nth-child(3){animation-delay:0.3s;}
+  @keyframes bounce{
+    0%,60%,100%{transform:translateY(0);opacity:0.5;}
+    30%{transform:translateY(-4px);opacity:1;}
+  }
+  footer{
+    border-top:1px solid #E4DFD2;
+    background:var(--cream);
+    padding:14px 20px 18px;
+  }
+  .inputrow{
+    display:flex;
+    gap:10px;
+    align-items:flex-end;
+  }
+  textarea#composer{
+    flex:1;
+    resize:none;
+    border:1.5px solid #D8D2C2;
+    border-radius:10px;
+    padding:11px 13px;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    line-height:1.4;
+    background:#fff;
+    color:var(--ink);
+    max-height:120px;
+  }
+  textarea#composer:focus{
+    outline:none;
+    border-color:var(--teal);
+  }
+  button.send{
+    background:var(--magenta);
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    padding:11px 18px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    height:44px;
+  }
+  button.send:disabled{
+    opacity:0.5;
+    cursor:default;
+  }
+  button.send:hover:not(:disabled){
+    background:#83236F;
+  }
+  .brandkit{
+    margin-top:12px;
+  }
+  .brandkit summary{
+    cursor:pointer;
+    font-size:13px;
+    font-weight:600;
+    color:var(--teal-dark);
+    list-style:none;
+  }
+  .brandkit summary::-webkit-details-marker{display:none;}
+  .brandkit summary:before{
+    content:"+ ";
+    color:var(--magenta);
+  }
+  .brandkit[open] summary:before{
+    content:"– ";
+  }
+  .brandkit-body{
+    margin-top:10px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .brandkit-body textarea{
+    width:100%;
+    min-height:70px;
+    border:1.5px solid #D8D2C2;
+    border-radius:8px;
+    padding:9px 11px;
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    resize:vertical;
+  }
+  .brandkit-body input[type=file]{
+    font-size:12px;
+    color:var(--muted);
+  }
+  .brandkit-actions{
+    display:flex;
+    justify-content:flex-end;
+  }
+  button.addbrand{
+    background:transparent;
+    border:1.5px solid var(--teal);
+    color:var(--teal-dark);
+    border-radius:8px;
+    padding:7px 14px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  button.addbrand:hover{
+    background:var(--teal);
+    color:#fff;
+  }
+  .hint{
+    font-size:11px;
+    color:var(--muted);
+    margin:0;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <p class="eyebrow">FIERCE FOUNDRY</p>
+    <h1>Pitch Script Generator</h1>
+    <p class="sub">Answer a few questions about your company. I'll help you shape it into a five-minute investor pitch — and ask for more when an answer needs it.</p>
+  </header>
+
+  <div id="chat"></div>
+
+  <div id="typing"><span></span><span></span><span></span></div>
+
+  <footer>
+    <div class="inputrow">
+      <textarea id="composer" rows="1" placeholder="Type your answer..."></textarea>
+      <button class="send" id="sendBtn">Send</button>
+    </div>
+    <details class="brandkit">
+      <summary>Add brand voice notes</summary>
+      <div class="brandkit-body">
+        <p class="hint">Paste your brand voice guidelines, or a sample of your existing copy, and I'll rewrite your finished script to match — best for text or .txt/.md files (copy-paste content from PDFs or Word docs).</p>
+        <textarea id="brandText" placeholder="Paste brand voice notes or sample copy here..."></textarea>
+        <input type="file" id="brandFile" accept=".txt,.md" />
+        <div class="brandkit-actions">
+          <button class="addbrand" id="addBrandBtn">Add to conversation</button>
+        </div>
+      </div>
+    </details>
+  </footer>
+</div>
+
+<script>
+let messages = [];
+const chatEl = document.getElementById('chat');
+const typingEl = document.getElementById('typing');
+const composer = document.getElementById('composer');
+const sendBtn = document.getElementById('sendBtn');
+
+function renderBubble(role, text){
+  const div = document.createElement('div');
+  div.className = 'bubble ' + role;
+  if(role === 'assistant'){
+    const tag = document.createElement('span');
+    tag.className = 'role-tag';
+    tag.textContent = 'PITCH COACH';
+    div.appendChild(tag);
+    div.appendChild(document.createTextNode(text));
+  } else {
+    div.textContent = text;
+  }
+  chatEl.appendChild(div);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function setLoading(isLoading){
+  typingEl.style.display = isLoading ? 'flex' : 'none';
+  sendBtn.disabled = isLoading;
+  composer.disabled = isLoading;
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+async function callClaude(){
+  setLoading(true);
+  try{
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages })
+    });
+    const data = await response.json();
+    if(data.error){
+      throw new Error(typeof data.error === 'string' ? data.error : JSON.stringify(data.error));
+    }
+    const textBlocks = (data.content || []).filter(b => b.type === 'text').map(b => b.text);
+    const reply = textBlocks.join('\n').trim() || "Sorry, I didn't catch that — could you try again?";
+    messages.push({ role: 'assistant', content: reply });
+    renderBubble('assistant', reply);
+  } catch(err){
+    renderBubble('assistant', "Something went wrong reaching the model. Please try again.");
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+}
+
+function sendUser(text){
+  if(!text.trim()) return;
+  messages.push({ role: 'user', content: text.trim() });
+  renderBubble('user', text.trim());
+  composer.value = '';
+  composer.style.height = 'auto';
+  callClaude();
+}
+
+sendBtn.addEventListener('click', () => sendUser(composer.value));
+composer.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter' && !e.shiftKey){
+    e.preventDefault();
+    sendUser(composer.value);
+  }
+});
+composer.addEventListener('input', () => {
+  composer.style.height = 'auto';
+  composer.style.height = Math.min(composer.scrollHeight, 120) + 'px';
+});
+
+document.getElementById('addBrandBtn').addEventListener('click', () => {
+  const textVal = document.getElementById('brandText').value.trim();
+  const fileInput = document.getElementById('brandFile');
+  const file = fileInput.files[0];
+
+  function sendBrand(content){
+    if(!content.trim()) return;
+    sendUser("Here are my brand voice notes:\n\n" + content.trim());
+    document.getElementById('brandText').value = '';
+    fileInput.value = '';
+    document.querySelector('.brandkit').open = false;
+  }
+
+  if(file){
+    const reader = new FileReader();
+    reader.onload = (e) => sendBrand(e.target.result);
+    reader.readAsText(file);
+  } else {
+    sendBrand(textVal);
+  }
+});
+
+// Kick off the conversation
+messages.push({ role: 'user', content: "Let's begin." });
+callClaude();
+</script>
+</body>
+</html>
