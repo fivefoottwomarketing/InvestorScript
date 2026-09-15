@@ -1,0 +1,6 @@
+{
+  "name": "fierce-foundry-pitch-script-generator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Founder pitch-script survey tool, backed by the Claude API, for embedding on the Fierce Foundry Squarespace site."
+}
